@@ -12,11 +12,11 @@
 
 | 模块 | 实现方式 | 说明 |
 | --- | --- | --- |
-| 环境感知 | SHT20 (I2C) + 光敏 (ADC) + 电压电流 (ADC+DMA) | 温度 / 湿度 / 光照 / 电压 / 电流 5 路 |
+| 环境感知 | SHT20 + ALS (I2C1) + 电压电流 (ADC+DMA) | 温度 / 湿度 / 光照 / 电压 / 电流 5 路 |
 | 状态裁决 | FreeRTOS 事件组 | `NORMAL` / `WARN` / `ALARM` 三态，明火与用电异常直接进 ALARM |
 | 声光报警 | 蜂鸣器 PA15 + LED2 / LED3 | 按状态分级响应，支持一键消音 |
 | 主动散热 | TIM3_CH1 PWM (PC6) | 1 kHz，0~100% 占空比线性可调 |
-| 人机界面 | LVGL 8.3 + ILI9341 (SPI) + FT6336 (I2C) | 主页 / 设置 / 报警 / WiFi 四屏 |
+| 人机界面 | LVGL 8.3 + ILI9341 (SPI2) + FT6336 (I2C2) | 主页 / 设置 / 报警 / WiFi 四屏 |
 | 云端上报 | ESP-12F AT 指令 (USART3) | 2 s 一帧 CSV，支持远程指令下发 |
 | 报警历史 | RAM 环形缓冲 | 最近 20 条，带边沿检测与 1 s 去抖 |
 | 可靠性 | WWDG 窗口看门狗 | 30 ms 喂狗，落在 24.2~49.9 ms 窗口内 |
@@ -73,16 +73,17 @@ SHT20 / ALS / ADC-DMA
 
 | 功能 | 引脚 | 外设 |
 | --- | --- | --- |
-| LCD ILI9341 | PI0 NSS / PI1 SCK / PI2 MISO / PI3 MOSI | SPI + DMA |
+| LCD ILI9341 | PI0 NSS / PI1 SCK / PI2 MISO / PI3 MOSI | SPI2 |
 | LCD 背光 / 复位 / TE | PE5 / PE2 / PE1 | GPIO |
-| 触摸 FT6336 | I2C | I2C1 |
-| SHT20 温湿度 | I2C | I2C1 |
+| 触摸 FT6336 | 共用 I2C2（400 kHz） | 7 位地址 0x38 |
+| SHT20 温湿度 | 共用 I2C1（100 kHz） | 8 位地址 0x80 |
+| 光照 ALS | 共用 I2C1（100 kHz） | 8 位地址 0x3C |
 | 火焰传感器 | PB3 | GPIO 输入（需关闭 JTAG，PB3=JTDO） |
 | 蜂鸣器 | PA15 | GPIO 输出 |
 | LED1 / LED2 / LED3 | PC4 / PC3 / PC13 | GPIO 输出 |
 | 风扇 PWM | PC6 | TIM3_CH1（AF2），PSC=839, ARR=99 → 1 kHz |
 | 按键 KEY1 / KEY2 / KEY3 | PC9 / PC8 / PC5 | GPIO 输入，低有效 |
-| ESP-12F | USART3 | 115200，空闲中断 + DMA 收包 |
+| ESP-12F | USART3 | 115200，空闲中断（`HAL_UARTEx_ReceiveToIdle_IT`）收包 |
 | 调试串口 | USART6 | 115200，`printf` 重定向到这里 |
 
 ---
@@ -100,7 +101,7 @@ KitchenMonitor-RT/
 │   └── Src/
 │       ├── main.c            # 时钟、外设初始化、PWM 频率设定
 │       ├── freertos.c        # 任务创建与任务体（CubeMX 生成 + USER CODE）
-│       ├── sensor.c          # SHT20 / 光照 / ADC 采集
+│       ├── sensor.c          # SHT20 / ALS 采集
 │       ├── adc_monitor.c     # 电压电流 ADC+DMA
 │       ├── task_state.c      # 判限逻辑、事件置位
 │       ├── system_state.c    # 三态裁决、阈值变量
@@ -218,7 +219,7 @@ Tem=25.02,Hum=59.92,V=0.70,A=0.008,Light=370,State=0\r\n
 | `Hum` | 湿度 | %RH |
 | `V` | 电压 | V |
 | `A` | 电流 | A |
-| `Light` | 光照（ADC 相对值） | — |
+| `Light` | 光照（ALS 原始值） | — |
 | `State` | 系统状态：0 正常 / 1 警告 / 2 报警 | — |
 
 ### 下行指令
