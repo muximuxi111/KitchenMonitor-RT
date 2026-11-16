@@ -1,0 +1,46 @@
+# ============================================================
+#  Keil MDK-ARM build output
+# ============================================================
+MDK-ARM/11.10_LVGL/
+*.o
+*.d
+*.crf
+*.axf
+*.hex
+*.bin
+*.map
+*.dep
+*.lnp
+*.sct
+*.lst
+*.iex
+*.htm
+*.build_log.htm
+*.uvguix.*
+
+# ============================================================
+#  Local secrets -- never commit
+#  真实的 WiFi 账号密码放在这里，模板见 wifi_config.example.h
+# ============================================================
+Core/Inc/wifi_config.h
+
+# ============================================================
+#  Unused CMSIS components
+#  工程 .uvprojx 中 0 处引用，Clone 后不影响编译
+# ============================================================
+Drivers/CMSIS/DSP/
+Drivers/CMSIS/NN/
+Drivers/CMSIS/Core_A/
+Drivers/CMSIS/DAP/
+Drivers/CMSIS/RTOS/
+Drivers/CMSIS/RTOS2/
+Drivers/CMSIS/Documentation/
+LVGL_CUT/src/font/*.ttf
+LVGL_CUT/src/extra/libs/freetype/*.ttf
+
+# ============================================================
+#  OS junk
+# ============================================================
+Thumbs.db
+Desktop.ini
+.DS_Store

@@ -1,0 +1,16 @@
+# 默认按文本处理，检出时使用平台换行符
+* text=auto
+
+# 源码统一 LF 入库
+*.c      text eol=lf
+*.h      text eol=lf
+*.s      text eol=lf
+*.md     text eol=lf
+*.ioc    text eol=lf
+*.uvprojx text eol=lf
+*.uvoptx  text eol=lf
+
+# 二进制资源不要做任何转换
+*.ttf    binary
+*.bin    binary
+*.hex    binary
